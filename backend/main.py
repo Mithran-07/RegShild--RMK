@@ -10,6 +10,8 @@ from backend.core.ingestion import DataLoader
 from backend.core.aml_engine import AMLEngine
 from backend.core.provenance import ProvenanceManager
 from backend.services.str_generator import generate_str_report
+from backend.services.simulator import stream_live_transactions_generator
+from fastapi.responses import StreamingResponse
 
 app = FastAPI(title="RegShield: Real-Time AML & Compliance Rule Engine")
 
@@ -114,3 +116,18 @@ def verify_ledger():
 @app.get("/")
 def read_root():
     return {"message": "RegShield AML Engine is Running. Use /docs for API."}
+
+@app.get("/api/stream/live")
+async def stream_transactions():
+    """
+    Server-Sent Events endpoint for live transaction monitoring simulation.
+    """
+    return StreamingResponse(
+        stream_live_transactions_generator(
+            data_loader, 
+            aml_engine, 
+            provenance_manager,
+            generate_str_report
+        ),
+        media_type="text/event-stream"
+    )

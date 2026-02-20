@@ -3,6 +3,8 @@
 :root {
   --background: #020617; /* Slate 950 */
   --foreground: #f8fafc; /* Slate 50 */
+  --primary-blue: #3b82f6;
+  --primary-cyan: #06b6d4;
 }
 
 @theme inline {
@@ -15,22 +17,40 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: #0f172a; 
+  border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155; 
-  border-radius: 9999px;
+  background: linear-gradient(180deg, #3b82f6 0%, #06b6d4 100%);
+  border-radius: 10px;
+  border: 2px solid #0f172a;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #475569; 
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(180deg, #2563eb 0%, #0891b2 100%);
+}
+
+/* Smooth Animations */
+* {
+  transition-property: color, background-color, border-color, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeIn 0.5s ease-out forwards;
 }
