@@ -56,57 +56,57 @@ export default function LedgerView({ newTransaction }: LedgerViewProps) {
   return (
     <div className="h-full flex flex-col">
        <div className={cn(
-           "flex items-center justify-between p-3 rounded-lg text-sm font-semibold mb-4 border transition-colors duration-500",
-           status === "Verified" ? "bg-green-900/30 border-green-800 text-green-400" :
-           status === "TAMPERED" ? "bg-red-900/30 border-red-800 text-red-500 animate-pulse" :
-           "bg-slate-800 border-slate-700 text-slate-400"
+           "flex items-center justify-between p-3 rounded-lg text-sm font-semibold mb-4 border-2 transition-colors duration-500",
+           status === "Verified" ? "bg-green-100 border-green-300 text-green-700" :
+           status === "TAMPERED" ? "bg-red-100 border-red-300 text-red-700 animate-pulse" :
+           "bg-gray-100 border-gray-300 text-gray-600"
        )}>
            <span className="flex items-center gap-2">
                {status === "Verified" ? <CheckCircle size={16} /> : <AlertOctagon size={16} />}
                Chain Status: {status}
            </span>
-           <button onClick={fetchLedger} className="p-1 hover:bg-slate-700 rounded full transition-colors">
+           <button onClick={fetchLedger} className="p-1 hover:bg-gray-200 rounded-full transition-colors">
                <RotateCw size={14} className={loading ? "animate-spin" : ""} />
            </button>
        </div>
 
        <div className="space-y-4 relative">
            {/* Timeline Line */}
-           <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-800 z-0"></div>
+           <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300 z-0"></div>
 
            {ledger.length === 0 && (
-               <div className="text-center text-slate-500 text-xs py-10">
+               <div className="text-center text-gray-500 text-xs py-10">
                    No transactions recorded in this session.
                </div>
            )}
 
            {ledger.map((tx, idx) => (
                <div key={idx} className="relative z-10 pl-10">
-                   <div className="absolute left-[13px] top-3 w-3 h-3 bg-blue-500 rounded-full border-2 border-slate-900"></div>
+                   <div className="absolute left-[13px] top-3 w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow-md"></div>
                    
-                   <div className="bg-slate-900 border border-slate-800 p-3 rounded-lg shadow-lg hover:border-blue-500/50 transition-colors group">
+                   <div className="bg-white border-2 border-gray-200 p-3 rounded-lg shadow-md hover:border-blue-400 hover:shadow-lg transition-all group">
                        <div className="flex justify-between items-start mb-2">
-                           <span className="text-xs font-mono text-blue-400">{tx.transaction_id || "TX-Unknown"}</span>
+                           <span className="text-xs font-mono text-blue-600 font-semibold">{tx.transaction_id || "TX-Unknown"}</span>
                            <span className={cn(
-                               "text-[10px] px-2 py-0.5 rounded-full uppercase border",
-                               tx.total_score > 80 ? "bg-red-900/20 text-red-400 border-red-900" : "bg-green-900/20 text-green-400 border-green-900"
+                               "text-[10px] px-2 py-0.5 rounded-full uppercase border-2 font-bold",
+                               tx.total_score > 80 ? "bg-red-100 text-red-700 border-red-300" : "bg-green-100 text-green-700 border-green-300"
                            )}>
                                Score: {tx.total_score}
                            </span>
                        </div>
                        
                        <div className="space-y-2">
-                           <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono bg-slate-950 p-1.5 rounded truncate">
-                               <Hash size={10} className="text-purple-500 shrink-0" />
+                           <div className="flex items-center gap-2 text-[10px] text-gray-600 font-mono bg-gray-50 p-1.5 rounded truncate border border-gray-200">
+                               <Hash size={10} className="text-purple-600 shrink-0" />
                                <span className="truncate w-full">{tx.provenance?.current_hash || "No Hash"}</span>
                            </div>
-                           <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono bg-slate-950 p-1.5 rounded truncate">
-                               <Link size={10} className="text-orange-500 shrink-0" />
+                           <div className="flex items-center gap-2 text-[10px] text-gray-600 font-mono bg-gray-50 p-1.5 rounded truncate border border-gray-200">
+                               <Link size={10} className="text-orange-600 shrink-0" />
                                <span className="truncate w-full">Prev: {tx.provenance?.prev_hash?.substring(0, 16)}...</span>
                            </div>
                            {tx.provenance?.eth_tx_hash && (
-                               <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono bg-slate-950 p-1.5 rounded truncate border border-blue-900/20">
-                                   <span className="text-blue-500">ETH</span>
+                               <div className="flex items-center gap-2 text-[10px] text-gray-600 font-mono bg-blue-50 p-1.5 rounded truncate border-2 border-blue-200">
+                                   <span className="text-blue-600 font-bold">ETH</span>
                                    <span className="truncate w-full">{tx.provenance.eth_tx_hash}</span>
                                </div>
                            )}

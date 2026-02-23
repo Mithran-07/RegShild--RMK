@@ -5,6 +5,44 @@ import pandas as pd
 class AMLEngine:
     def __init__(self):
         self.high_risk_countries = {"Panama", "Syria", "North Korea", "Iran"}
+        self.structuring_threshold = 10000  # Default threshold
+
+    def set_structuring_threshold(self, value: float):
+        """Crisis Feature 1: Dynamically update reporting threshold"""
+        self.structuring_threshold = value
+
+
+    def calculate_weighted_risk(self, velocity: float, geo_entropy: float, hops_to_blacklist: int) -> float:
+        """
+        CRISIS FEATURE 2: Weighted Risk Score [0-100]
+        
+        Formula:
+        - Velocity (tx/hr): weight 0.4
+        - Geographic Entropy: weight 0.3  
+        - Entity Proximity (1/hops): weight 0.3
+        
+        If score > 75, account is GATED to ₹5,000 limit
+        """
+        # Normalize velocity to 0-100 scale (assume max 10 tx/hr = 100)
+        velocity_normalized = min(velocity * 10, 100)
+        
+        # Normalize geo_entropy (assume max distance 10000km = 100)
+        geo_normalized = min((geo_entropy / 10000) * 100, 100)
+        
+        # Calculate proximity score (closer to blacklist = higher risk)
+        if hops_to_blacklist == 0:
+            proximity_score = 100
+        else:
+            proximity_score = (1 / hops_to_blacklist) * 100
+        
+        # Weighted sum
+        total_risk = (
+            velocity_normalized * 0.4 +
+            geo_normalized * 0.3 +
+            proximity_score * 0.3
+        )
+        
+        return min(total_risk, 100)  # Cap at 100
 
     def evaluate_transaction(self, tx, account_db, pep_db, tx_history_df):
         """
@@ -30,6 +68,8 @@ class AMLEngine:
             "kyc": 0
         }
         triggered_rules = []
+        cycle_path = None  # Crisis Feature 3: Initialize cycle path safely
+
         
         sender_id = tx.get("Sender_Account_ID")
         receiver_id = tx.get("Receiver_Account_ID")
@@ -44,9 +84,14 @@ class AMLEngine:
         sender_info = account_db.get(sender_id, {})
         receiver_info = account_db.get(receiver_id, {})
         
+        # CRISIS FEATURE 2: Check if account is GATED
+        if sender_info.get("Account_Status") == "Gated_5000_Limit":
+            if amount > 5000:
+                raise ValueError(f"GATED_ACCOUNT_BREACH: Account {sender_id} is limited to ₹5,000 transfers. Attempted: ${amount:,.2f}")
+        
         # ---------------------------------------------------------
         # 1. Structuring Risk (Smurfing)
-        # Logic: Sum amounts for Sender over trailing 24h. > $10k via multiple txs -> +30
+        # Logic: Sum amounts for Sender over trailing 24h. > threshold via multiple txs -> +30
         # ---------------------------------------------------------
         if not tx_history_df.empty:
             # Filter for sender
@@ -60,9 +105,9 @@ class AMLEngine:
                 total_24h = recent_txs["Amount"].sum() + amount
                 count_24h = len(recent_txs) + 1
                 
-                if total_24h > 10000 and count_24h > 1:
+                if total_24h > self.structuring_threshold and count_24h > 1:
                     risk_breakdown["structuring"] = 30
-                    triggered_rules.append(f"Structuring: total {total_24h} over {count_24h} transactions in 24h")
+                    triggered_rules.append(f"Structuring: total {total_24h} > threshold {self.structuring_threshold} over {count_24h} transactions in 24h")
 
         # ---------------------------------------------------------
         # 2. Velocity Risk
@@ -86,57 +131,65 @@ class AMLEngine:
         # ---------------------------------------------------------
         # 3. Network & Layering Risk (Graph Traversal)
         # Logic: 3 hops. Circular (A->B->C->A) or Mule (Many->One). +40 Risk.
+        # OPTIMIZED: Bulletproof BFS for circular detection (A->B->C->A pattern)
         # ---------------------------------------------------------
-        # Build a mini graph from history
-        # (This is expensive for large history, but okay for MVP/Hackathon)
+        # Build a directed graph from transaction history
         graph = {}
         if not tx_history_df.empty:
-             for _, row in tx_history_df.iterrows():
+            for _, row in tx_history_df.iterrows():
                 u, v = row["Sender_Account_ID"], row["Receiver_Account_ID"]
-                if u not in graph: graph[u] = set()
+                if u not in graph:
+                    graph[u] = set()
                 graph[u].add(v)
         
-        # Add current edge
-        if sender_id not in graph: graph[sender_id] = set()
+        # Add current transaction edge to graph
+        if sender_id not in graph:
+            graph[sender_id] = set()
         graph[sender_id].add(receiver_id)
 
-        # Detect cycle: Start at receiver, see if we can reach sender in < 3 steps
-        # Path: receiver -> x -> sender (length 2, total 3 edges A->R->x->A)
-        # BFS
+        # Detect CIRCULAR PATTERN: Check if receiver can reach sender in <= 2 hops
+        # Pattern: A -> B -> C -> A (3 edges, forming a cycle)
+        # BFS from receiver_id, looking for sender_id within 2 steps
+        # CRISIS FEATURE 3: Track path for network visualization
         found_cycle = False
-        queue = [(receiver_id, 0)]
-        visited = set([receiver_id])
-        
-        while queue:
-            curr, depth = queue.pop(0)
-            if depth >= 2: continue
+        cycle_path = None
+        if receiver_id in graph:  # Only check if receiver has outgoing edges
+            queue = [(receiver_id, 0, [sender_id, receiver_id])]  # (node, depth, path)
+            visited = {receiver_id}
             
-            neighbors = graph.get(curr, [])
-            for neighbor in neighbors:
-                if neighbor == sender_id:
-                    found_cycle = True
-                    break
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    queue.append((neighbor, depth+1))
-            if found_cycle: break
+            while queue and not found_cycle:
+                curr, depth, path = queue.pop(0)
+                
+                # Check neighbors of current node
+                neighbors = graph.get(curr, set())
+                for neighbor in neighbors:
+                    # Found cycle: receiver leads back to sender
+                    if neighbor == sender_id:
+                        found_cycle = True
+                        cycle_path = path + [sender_id]  # Complete the cycle
+                        break
+                    
+                    # Continue BFS if within depth limit
+                    if depth < 2 and neighbor not in visited:
+                        visited.add(neighbor)
+                        queue.append((neighbor, depth + 1, path + [neighbor]))
             
         if found_cycle:
-             risk_breakdown["network"] = 40
-             triggered_rules.append("Network: Circular transaction detected")
+            risk_breakdown["network"] = 40
+            triggered_rules.append("Network: Circular transaction pattern detected (A→B→C→A)")
         
-        # Detect Mule: Receiver has > X diverse incoming senders
-        # Logic: Check indegree of receiver
-        receivers_senders = set()
-        if not tx_history_df.empty:
-             rec_history = tx_history_df[tx_history_df["Receiver_Account_ID"] == receiver_id]
-             receivers_senders = set(rec_history["Sender_Account_ID"].tolist())
-        receivers_senders.add(sender_id)
-        
-        if len(receivers_senders) > 4: # Arbitrary "Mule" threshold
-             if risk_breakdown["network"] == 0: # Avoid double penalty or stack?
-                 risk_breakdown["network"] = 40
-                 triggered_rules.append(f"Network: Potential Mule (Received from {len(receivers_senders)} unique senders)")
+        # Detect MULE ACCOUNT: Receiver has > 4 unique incoming senders
+        # This indicates potential money laundering via intermediary accounts
+        if not found_cycle:  # Don't double-penalize
+            incoming_senders = set()
+            if not tx_history_df.empty:
+                receiver_history = tx_history_df[tx_history_df["Receiver_Account_ID"] == receiver_id]
+                incoming_senders = set(receiver_history["Sender_Account_ID"].tolist())
+            incoming_senders.add(sender_id)  # Include current sender
+            
+            if len(incoming_senders) > 4:
+                risk_breakdown["network"] = 40
+                triggered_rules.append(f"Network: Mule account detected ({len(incoming_senders)} unique senders → {receiver_id})")
 
 
         # ---------------------------------------------------------
@@ -202,11 +255,17 @@ class AMLEngine:
         elif total_score >= 50:
             decision = "Flag for Review"
             
-        return {
+        result = {
             "total_score": total_score,
             "risk_breakdown": risk_breakdown,
             "decision": decision,
             "triggered_rules": triggered_rules
         }
+        
+        # CRISIS FEATURE 3: Include cycle path if circular pattern detected
+        if cycle_path:
+            result["cycle_path"] = cycle_path
+            
+        return result
 
 aml_engine = AMLEngine()

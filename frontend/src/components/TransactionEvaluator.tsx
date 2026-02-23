@@ -62,14 +62,14 @@ export default function TransactionEvaluator({ onEvaluate }: TransactionEvaluato
         <button
           type="button"
           onClick={() => loadExample("clean")}
-          className="flex-1 bg-gradient-to-r from-green-900/30 to-emerald-900/30 hover:from-green-800/40 hover:to-emerald-800/40 text-green-400 border border-green-700/50 hover:border-green-600 px-4 py-2.5 rounded-lg transition-all text-xs font-semibold shadow-lg hover:shadow-green-500/20"
+          className="flex-1 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 text-green-700 border-2 border-green-300 hover:border-green-400 px-4 py-2.5 rounded-lg transition-all text-xs font-semibold shadow-md hover:shadow-lg"
         >
           ✓ Load Clean Tx
         </button>
         <button
           type="button"
           onClick={() => loadExample("suspicious")}
-          className="flex-1 bg-gradient-to-r from-red-900/30 to-orange-900/30 hover:from-red-800/40 hover:to-orange-800/40 text-red-400 border border-red-700/50 hover:border-red-600 px-4 py-2.5 rounded-lg transition-all text-xs font-semibold shadow-lg hover:shadow-red-500/20"
+          className="flex-1 bg-gradient-to-r from-red-50 to-orange-50 hover:from-red-100 hover:to-orange-100 text-red-700 border-2 border-red-300 hover:border-red-400 px-4 py-2.5 rounded-lg transition-all text-xs font-semibold shadow-md hover:shadow-lg"
         >
           ⚠ Load High-Risk Tx
         </button>
@@ -78,61 +78,61 @@ export default function TransactionEvaluator({ onEvaluate }: TransactionEvaluato
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-slate-400 block mb-2 uppercase tracking-wider">Transaction ID</label>
+            <label className="text-xs font-semibold text-gray-600 block mb-2 uppercase tracking-wider">Transaction ID</label>
             <input
               name="Transaction_ID"
               value={formData.Transaction_ID}
               onChange={handleChange}
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 text-white transition-all shadow-inner"
+              className="w-full bg-white border-2 border-gray-300 focus:border-cyan-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-200 text-gray-900 transition-all shadow-sm"
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-400 block mb-2 uppercase tracking-wider">Timestamp</label>
+            <label className="text-xs font-semibold text-gray-600 block mb-2 uppercase tracking-wider">Timestamp</label>
             <input
               name="Timestamp"
               value={formData.Timestamp}
               onChange={handleChange}
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 text-white transition-all shadow-inner"
+              className="w-full bg-white border-2 border-gray-300 focus:border-cyan-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-200 text-gray-900 transition-all shadow-sm"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-slate-400 block mb-2 uppercase tracking-wider">Sender Account</label>
+            <label className="text-xs font-semibold text-gray-600 block mb-2 uppercase tracking-wider">Sender Account</label>
             <input
               name="Sender_Account_ID"
               value={formData.Sender_Account_ID}
               onChange={handleChange}
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 text-white transition-all shadow-inner"
+              className="w-full bg-white border-2 border-gray-300 focus:border-cyan-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-200 text-gray-900 transition-all shadow-sm"
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-400 block mb-2 uppercase tracking-wider">Receiver Account</label>
+            <label className="text-xs font-semibold text-gray-600 block mb-2 uppercase tracking-wider">Receiver Account</label>
             <input
               name="Receiver_Account_ID"
               value={formData.Receiver_Account_ID}
               onChange={handleChange}
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 text-white transition-all shadow-inner"
+              className="w-full bg-white border-2 border-gray-300 focus:border-cyan-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-200 text-gray-900 transition-all shadow-sm"
             />
           </div>
         </div>
 
         <div>
-           <label className="text-xs font-semibold text-slate-400 block mb-2 uppercase tracking-wider">Amount (USD)</label>
+           <label className="text-xs font-semibold text-gray-600 block mb-2 uppercase tracking-wider">Amount (USD)</label>
            <input
               name="Amount"
               type="number"
               value={formData.Amount}
               onChange={handleChange}
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 text-white font-mono transition-all shadow-inner"
+              className="w-full bg-white border-2 border-gray-300 focus:border-cyan-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-200 text-gray-900 font-mono transition-all shadow-sm"
             />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:from-slate-700 disabled:to-slate-700 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all disabled:cursor-not-allowed shadow-xl shadow-cyan-500/30 hover:shadow-cyan-500/50 disabled:shadow-none hover:scale-[1.02] active:scale-[0.98] group mt-2"
+          className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none hover:scale-[1.02] active:scale-[0.98] group mt-2"
         >
           {loading ? (
             <>

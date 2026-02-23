@@ -29,9 +29,38 @@ Financial institutions lose **$2-5 trillion annually** to money laundering schem
 ✅ **Automated STR Generation** - LLM-powered compliance reports  
 ✅ **Immutable Audit Trail** - Blockchain-anchored provenance  
 
+### 3. Crisis Response Modules (New!)
+
+#### A. Adaptive Regulatory Threshold Shift
+**Problem:** Regulations change overnight (e.g., reporting threshold drops from $10k to $7k).
+**Solution:**
+- **Retroactive Scanning:** Automatically re-scans last 24h of transactions.
+- **Instant STR Generation:** Flags previously "safe" accounts that now violate new rules.
+- **Zero-Downtime Update:** No system restart required.
+
+#### B. Weighted Risk Aggregation & Account Gating
+**Problem:** Single rules miss complex, multi-factor risks (e.g., fast transactions + risky location).
+**Solution:**
+- **Composite Risk Score:** Combines Velocity (40%), Geo-Entropy (30%), and Network Closeness (30%).
+- **Automated Account Gating:** If Risk Score > 75, account is **automatically restricted** to small transfers (< ₹5,000).
+
+#### C. Visual Network Forensics
+**Problem:** Text-based logs hide circular money laundering rings.
+**Solution:**
+- **Interactive Graph:** Visualizes money flow cycles (A → B → C → A).
+- **Cycle Detection:** Highlights the exact path of laundered funds.
+
 ---
 
 ## 🏗️ System Architecture
+## 📂 Data Sources (Updated)
+
+The system is powered by verified datasets located in `backend/data/`:
+- **`regshield_account_master.xlsx`**: Detailed KYC profiles including declared income and risk ratings.
+- **`regshield_pep_watchlist.xlsx`**: Global list of Politically Exposed Persons.
+- **`regshield_transaction_log.xlsx`**: Historical transaction data for pattern training.
+- **`weighted_risk_dataset.xlsx`**: specialized dataset for verifying multi-factor risk scoring.
+
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
